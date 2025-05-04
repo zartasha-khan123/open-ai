@@ -1,0 +1,246 @@
+# # import os
+# # from dotenv import load_dotenv
+# # from agents import Agent, Runner, OpenAIChatCompletionsModel, AsyncOpenAI, set_tracing_disabled
+
+# # #--------------------------------------agents ka setup---------------------------------------------#
+# # load_dotenv()
+
+# # set_tracing_disabled(disabled=True)
+
+# # OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+# # if not OPENROUTER_API_KEY:
+# #     raise Exception("OPENROUTER_API_KEY is not set!")
+
+# # #--------------------------------------agents ka instance---------------------------------------------#
+# # client = AsyncOpenAI(
+# #     api_key = OPENROUTER_API_KEY,
+# #     base_url ="https://openrouter.ai/api/v1",
+# # )
+# # agent = Agent(
+# #     model=OpenAIChatCompletionsModel(model='deepseek/deepseek-chat-v3-0324:free',openai_client=client),
+# #     name='zartasha agent',
+# #     instructions='you are a helpful assistant',
+# # )
+
+# # #----------------------------agents ko chalaya-------------------------------------------
+# # res = Runner.run_sync(agent,"what is the capital of Pakistan?")
+
+# # print(res.final_output)
+
+
+# # app.py
+# import os
+# import asyncio
+# from dotenv import load_dotenv
+# import streamlit as st
+# from agents import Agent, Runner, OpenAIChatCompletionsModel, AsyncOpenAI, set_tracing_disabled
+
+# load_dotenv()
+# set_tracing_disabled(disabled=True)
+
+# OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+# if not OPENROUTER_API_KEY:
+#     st.error("OPENROUTER_API_KEY is not set!")
+#     st.stop()
+
+# st.title("💬 Ask Zartasha Agent")
+# user_input = st.text_input("Enter your question:")
+
+# if user_input:
+#     with st.spinner("Thinking..."):
+#         client = AsyncOpenAI(
+#             api_key=OPENROUTER_API_KEY,
+#             base_url="https://openrouter.ai/api/v1",
+#         )
+#         agent = Agent(
+#             model=OpenAIChatCompletionsModel(
+#                 model='deepseek/deepseek-chat-v3-0324:free',
+#                 openai_client=client
+#             ),
+#             name='zartasha agent',
+#             instructions='you are a helpful assistant',
+#         )
+
+#         # Use asyncio.run instead of run_sync
+#         response = asyncio.run(Runner.run(agent, user_input))
+#         st.success(response.final_output)
+
+
+# import os
+# import asyncio
+# import streamlit as st
+# from dotenv import load_dotenv
+# from agents import Agent, Runner, OpenAIChatCompletionsModel, AsyncOpenAI, set_tracing_disabled
+
+# # Load environment variables
+# load_dotenv()
+# set_tracing_disabled(disabled=True)
+
+# OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+# if not OPENROUTER_API_KEY:
+#     st.error("OPENROUTER_API_KEY is not set in your .env file.")
+#     st.stop()
+
+# # Initialize the model client and agent
+# client = AsyncOpenAI(
+#     api_key=OPENROUTER_API_KEY,
+#     base_url="https://openrouter.ai/api/v1",
+# )
+
+# def get_agent():
+#     return Agent(
+#         model=OpenAIChatCompletionsModel(
+#             model='deepseek/deepseek-chat-v3-0324:free',
+#             openai_client=client
+#         ),
+#         name='zartasha agent',
+#         instructions='You are a helpful assistant.'
+#     )
+
+# # Streamlit UI
+# st.set_page_config(page_title="Zartasha Agent", layout="centered")
+# st.title("🤖 Ask My Agent")
+
+# if "history" not in st.session_state:
+#     st.session_state.history = []
+
+# user_question = st.text_input("Enter your question:")
+# submit = st.button("Ask")
+
+# if submit and user_question:
+#     with st.spinner("Thinking..."):
+#         agent = get_agent()
+#         try:
+#             response = asyncio.run(Runner.run(agent, user_question))
+#             answer = response.final_output
+#             st.session_state.history.append((user_question, answer))
+#             st.success("Answered successfully!")
+#         except Exception as e:
+#             st.error(f"Error: {e}")
+
+# # Show current answer
+# if st.session_state.history:
+#     st.subheader("💡 Current Answer")
+#     latest_q, latest_a = st.session_state.history[-1]
+#     st.markdown(f"**Q:** {latest_q}")
+#     st.markdown(f"**A:** {latest_a}")
+
+# # Show history in card layout
+# if len(st.session_state.history) > 1:
+#     st.subheader("📜 Previous Questions")
+#     for i, (q, a) in enumerate(reversed(st.session_state.history[:-1]), 1):
+#         with st.container():
+#             st.markdown(f"**{i}. Question:** {q}")
+#             st.markdown(f"**Answer:** {a}")
+#             st.markdown("---")
+
+
+import os
+import asyncio
+import streamlit as st
+from dotenv import load_dotenv
+from agents import Agent, Runner, OpenAIChatCompletionsModel, AsyncOpenAI, set_tracing_disabled
+
+# Load env vars and setup
+load_dotenv()
+set_tracing_disabled(disabled=True)
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+if not OPENROUTER_API_KEY:
+    st.error("OPENROUTER_API_KEY is missing in your .env file")
+    st.stop()
+
+# Initialize API client
+client = AsyncOpenAI(
+    api_key=OPENROUTER_API_KEY,
+    base_url="https://openrouter.ai/api/v1",
+)
+
+def get_agent(tone):
+    return Agent(
+        model=OpenAIChatCompletionsModel(
+            model='deepseek/deepseek-chat-v3-0324:free',
+            openai_client=client
+        ),
+        name='Zartasha Agent',
+        instructions=f'You are a helpful assistant who answers in a {tone.lower()} tone.'
+    )
+
+# Streamlit UI setup
+st.set_page_config(page_title="Zartasha Agent", layout="centered")
+st.title("🤖 Ask Zartasha Agent")
+
+# Session state
+if "history" not in st.session_state:
+    st.session_state.history = []
+if "pinned" not in st.session_state:
+    st.session_state.pinned = []
+
+# Layout options
+st.sidebar.title("🧠 Customize Chat")
+mode = st.sidebar.selectbox("Select Chat Mode", ["General Knowledge", "Programming Help", "Casual Chat"])
+tone = st.sidebar.radio("Response Style", ["Formal", "Neutral", "Friendly"])
+
+# Suggested questions
+st.markdown("### 🔮 Suggested Questions")
+suggested_qs = [
+    "What is AI?",
+    "How to reverse a list in Python?",
+    "What is the capital of France?",
+    "Tell me a joke."
+]
+cols = st.columns(2)
+for i, q in enumerate(suggested_qs):
+    with cols[i % 2]:
+        if st.button(q):
+            st.session_state.suggested_input = q
+
+def run_query(query):
+    agent = get_agent(tone)
+    return asyncio.run(Runner.run(agent, query))
+
+# User input
+user_question = st.text_input("💬 Enter your question:", value=st.session_state.get("suggested_input", ""))
+submit = st.button("Ask")
+
+if submit and user_question:
+    with st.spinner("Thinking..."):
+        try:
+            result = run_query(user_question)
+            answer = result.final_output
+            st.session_state.history.append((user_question, answer))
+            st.success("✅ Answer generated!")
+        except Exception as e:
+            st.error(f"Error: {e}")
+    st.session_state.suggested_input = ""
+
+# Display latest answer
+if st.session_state.history:
+    st.subheader("💡 Current Answer")
+    latest_q, latest_a = st.session_state.history[-1]
+    st.markdown(f"**Q:** {latest_q}")
+    st.markdown(f"**A:** {latest_a}")
+
+    if st.button("📌 Pin this answer"):
+        st.session_state.pinned.append((latest_q, latest_a))
+
+    st.info(f"📝 Word Count: {len(latest_a.split())} | 🧠 Est. Tokens: {int(len(latest_a.split()) * 1.3)}")
+
+# Display pinned answers
+if st.session_state.pinned:
+    st.subheader("📌 Pinned Answers")
+    for q, a in st.session_state.pinned:
+        st.markdown(f"**📍Q:** {q}")
+        st.markdown(f"**A:** {a}")
+        st.markdown("---")
+
+# History
+if len(st.session_state.history) > 1:
+    st.subheader("📜 Chat History")
+    for i, (q, a) in enumerate(reversed(st.session_state.history[:-1]), 1):
+        with st.container():
+            st.markdown(f"**{i}. Q:** {q}")
+            st.markdown(f"**A:** {a}")
+            st.markdown("---")
+            
+            
